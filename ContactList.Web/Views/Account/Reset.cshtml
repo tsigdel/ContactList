@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Reset Password";
+}
+<div class="container mt-4">
+    <h2>Reset Password</h2>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.Error
+        </div>
+    }
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.Success
+        </div>
+    }
+
+    <form asp-action="Reset" method="post" id="resetPasswordForm">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-control" required aria-describedby="usernameHelp" />
+            <div id="usernameHelp" class="form-text">Enter your username to reset your password.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" id="newPassword" name="newPassword" class="form-control" required 
+                   pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@@$!%*?&]{8,}$" 
+                   title="Password must be at least 8 characters long and contain both letters and numbers." 
+                   aria-describedby="passwordHelp" />
+            <div id="passwordHelp" class="form-text">Password must be at least 8 characters long and contain both letters and numbers.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required 
+                   aria-describedby="confirmPasswordHelp" />
+            <div id="confirmPasswordHelp" class="form-text">Re-enter your new password to confirm.</div>
+        </div>
+
+        <button type="submit" class="btn btn-warning">Reset Password</button>
+    </form>
+    <a href="/Contacts/Index" class="btn btn-link">Back</a>
+</div>
+
+@section Scripts {
+    <script>
+        // Custom client-side validation for password match
+        document.getElementById("resetPasswordForm").onsubmit = function (e) {
+            var password = document.getElementById("newPassword").value;
+            var confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault(); // Prevent form submission
+                alert("Passwords do not match.");
+            }
+        };
+    </script>
+}

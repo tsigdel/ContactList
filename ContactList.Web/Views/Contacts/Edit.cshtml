@@ -1,0 +1,29 @@
+﻿@model ContactList.Web.Models.Contact
+@{
+    ViewData["Title"] = "Edit Contact";
+}
+<div class="container mt-4">
+    <h2>Edit Contact</h2>
+    <form method="post">
+        <input type="hidden" asp-for="ContactId" />
+        <input type="hidden" asp-for="UserId" />
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input asp-for="Name" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea asp-for="Notes" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    <a href="/Contacts/Index" class="btn btn-link">Back</a>
+</div>

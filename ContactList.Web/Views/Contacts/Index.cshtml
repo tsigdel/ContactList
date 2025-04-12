@@ -1,0 +1,35 @@
+﻿@model List<ContactList.Web.Models.Contact>
+@{
+    ViewData["Title"] = "Contact List";
+}
+<div class="container mt-4">
+    <h2>My Contacts</h2>
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search..." />
+            <button type="submit" class="btn btn-outline-secondary">Search</button>
+        </div>
+    </form>
+    <a href="/Contacts/Create" class="btn btn-primary mb-3">Create New</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Phone</th><th>Notes</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Model)
+            {
+                <tr>
+                    <td>@contact.Name</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.Phone</td>
+                    <td>@contact.Notes</td>
+                    <td>
+                        <a href="/Contacts/Edit/@contact.ContactId" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/Contacts/Delete/@contact.ContactId" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+  
+</div>
