@@ -19,8 +19,14 @@ namespace ContactList.Web.Common.Services
             // Serialize the data into a JSON string
             var jsonData = JsonConvert.SerializeObject(data);
 
-            // Store the serialized data in Redis with the provided key
-            await _redisCache.SetStringAsync(key, jsonData);
+            // Define cache entry options with 30-minute sliding expiration
+            var options = new DistributedCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(30)
+            };
+
+            // Store the serialized data in Redis with expiration
+            await _redisCache.SetStringAsync(key, jsonData, options);
         }
 
         // Implement the method to retrieve any object from Redis

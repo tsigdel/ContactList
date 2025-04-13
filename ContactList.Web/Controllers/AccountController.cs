@@ -105,8 +105,17 @@ namespace ContactList.Web.Controllers
                 var principal = new ClaimsPrincipal(identity);
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
                 _logger.LogInformation("User logged in successfully: {Username}", username);
+
+                // Ensure Redis operation is async and correctly handled
+                var loggedInUser = await _redisService.GetDataAsync<string>("LoggedInUser");
+
+                if (loggedInUser == null)
+                {
+                    // If there's no value in Redis, store the username
+                    await _redisService.StoreDataAsync("LoggedInUser", username);
+                }
+
                 return RedirectToAction("Index", "Contacts");
             }
             catch (Exception ex)

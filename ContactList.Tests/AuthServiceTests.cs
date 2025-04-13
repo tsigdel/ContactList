@@ -4,81 +4,113 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using System.Linq;
+using System;
 
 namespace ContactList.Tests.Services
 {
     [TestFixture]
     public class AuthServiceTests
     {
-        private AuthService _authService;
+        private IAuthService _authService;
         private AppDbContext _context;
-        private Mock<ILogger<AuthService>> _loggerMock;
+        private Mock<ILogger<AuthService>> _mockLogger;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: "AuthDb")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             _context = new AppDbContext(options);
-            _context.Database.EnsureDeleted(); // Clean DB before each test
-            _context.Database.EnsureCreated();
-
-            _loggerMock = new Mock<ILogger<AuthService>>();
-            _authService = new AuthService(_context, _loggerMock.Object);
+            _mockLogger = new Mock<ILogger<AuthService>>();
+            _authService = new AuthService(_context, _mockLogger.Object);
         }
 
         [Test]
-        public void Register_NewUser_ReturnsTrue()
+        public void Register_ValidUser_ReturnsTrue()
         {
-            var result = _authService.Register("testuser", "password123");
+            // Arrange
+            var username = "testuser";
+            var password = "Test@123";
+
+            // Act
+            var result = _authService.Register(username, password);
+
+            // Assert
             Assert.IsTrue(result);
+            Assert.IsNotNull(_context.Users.FirstOrDefault(u => u.Username == username));
         }
 
         [Test]
-        public void Register_ExistingUsername_ReturnsFalse()
+        public void Register_DuplicateUsername_ReturnsFalse()
         {
-            _authService.Register("testuser", "password123");
-            var result = _authService.Register("testuser", "newpass");
+            // Arrange
+            var username = "existinguser";
+            _authService.Register(username, "Test@123");
+
+            // Act
+            var result = _authService.Register(username, "AnotherPass");
+
+            // Assert
             Assert.IsFalse(result);
         }
 
         [Test]
         public void Authenticate_ValidCredentials_ReturnsUser()
         {
-            _authService.Register("testuser", "password123");
-            var user = _authService.Authenticate("testuser", "password123");
+            // Arrange
+            var username = "loginuser";
+            var password = "Login@123";
+            _authService.Register(username, password);
 
+            // Act
+            var user = _authService.Authenticate(username, password);
+
+            // Assert
             Assert.IsNotNull(user);
-            Assert.AreEqual("testuser", user.Username);
+            Assert.AreEqual(username, user.Username);
         }
 
         [Test]
-        public void Authenticate_InvalidPassword_ReturnsNull()
+        public void Authenticate_InvalidCredentials_ReturnsNull()
         {
-            _authService.Register("testuser", "password123");
-            var user = _authService.Authenticate("testuser", "wrongpassword");
+            // Arrange
+            var username = "invaliduser";
+            var password = "wrongpassword";
 
-            Assert.IsNull(user);
+            // Act
+            var result = _authService.Authenticate(username, password);
+
+            // Assert
+            Assert.IsNull(result);
         }
 
         [Test]
-        public void ResetPassword_ValidUser_ReturnsTrue()
+        public void ResetPassword_ValidUser_ChangesPassword()
         {
-            _authService.Register("testuser", "oldpass");
-            var result = _authService.ResetPassword("testuser", "newpass");
+            // Arrange
+            var username = "changepassuser";
+            var oldPassword = "Old@123";
+            var newPassword = "New@456";
+            _authService.Register(username, oldPassword);
 
+            // Act
+            var result = _authService.ResetPassword(username, newPassword);
+            var user = _authService.Authenticate(username, newPassword);
+
+            // Assert
             Assert.IsTrue(result);
-            var user = _authService.Authenticate("testuser", "newpass");
             Assert.IsNotNull(user);
         }
 
         [Test]
         public void ResetPassword_NonExistentUser_ReturnsFalse()
         {
-            var result = _authService.ResetPassword("nouser", "newpass");
+            // Act
+            var result = _authService.ResetPassword("nouser", "SomePassword");
+
+            // Assert
             Assert.IsFalse(result);
         }
 

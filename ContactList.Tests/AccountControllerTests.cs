@@ -1,104 +1,134 @@
 ﻿using ContactList.Web.Controllers;
-using ContactList.Web.Models;  // Make sure you include the appropriate namespace for the User class
+using ContactList.Web.Models;
 using ContactList.Web.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+using ContactList.Web.Common.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ContactList.Web.Common.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace ContactList.Tests.Controllers
 {
     [TestFixture]
     public class AccountControllerTests : IDisposable
     {
-        private Mock<IRedisService> _mockRedisService;
         private Mock<IAuthService> _mockAuthService;
+        private Mock<IRedisService> _mockRedisService;
         private Mock<ILogger<AccountController>> _mockLogger;
         private AccountController _controller;
-
-        public AccountControllerTests()
-        {
-            // Constructor can be used for any setup logic if necessary
-        }
+        private Mock<HttpContext> _mockHttpContext;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
             _mockAuthService = new Mock<IAuthService>();
+            _mockRedisService = new Mock<IRedisService>();
             _mockLogger = new Mock<ILogger<AccountController>>();
-            _controller = new AccountController(_mockAuthService.Object, _mockRedisService.Object, _mockLogger.Object);
+            _mockHttpContext = new Mock<HttpContext>();
+            _controller = new AccountController(
+                _mockAuthService.Object,
+                _mockRedisService.Object,
+                _mockLogger.Object
+            );
+        }
+
+        // Implement IDisposable for cleanup
+        [TearDown]
+        public void Dispose()
+        {
+            // Clean up mock dependencies
+            _mockAuthService = null;
+            _mockRedisService = null;
+            _mockLogger = null;
+
+            // Null out references to controller (not necessary to dispose)
+            _controller = null;
         }
 
         [Test]
         public async Task Login_InvalidCredentials_ReturnsViewWithError()
         {
             // Arrange
-            var username = "invaliduser";
-            var password = "invalidpassword";
-
-            // Return null for invalid credentials
-            _mockAuthService.Setup(service => service.Authenticate(username, password))
-                .Returns((User)null);  // Return null to simulate invalid credentials
+            var username = "wrong";
+            var password = "wrongpass";
+            _mockAuthService.Setup(x => x.Authenticate(username, password)).Returns((User)null);
 
             // Act
             var result = await _controller.Login(username, password);
 
             // Assert
-            var viewResult = result as ViewResult;
-            Assert.NotNull(viewResult);
-            Assert.AreEqual("Invalid credentials.", viewResult.ViewData["Error"]);
+            Assert.IsInstanceOf<ViewResult>(result);
+            var view = (ViewResult)result;
+            Assert.AreEqual("Invalid credentials.", view.ViewData["Error"]);
         }
 
-        //[Test]
-        //public void Register_ValidRegistration_RedirectsToLogin()
-        //{
-        //    // Arrange
-        //    var username = "newuser";
-        //    var password = "newpassword123";
 
-        //    _mockAuthService.Setup(service => service.Register(username, password))
-        //        .Returns(true);
-
-        //    // Act
-        //    var result = _controller.Register(username, password);  // No await, as it's not async
-
-        //    // Assert
-        //    var redirectResult = result as RedirectToActionResult;
-        //    Assert.NotNull(redirectResult);
-        //    Assert.AreEqual("Login", redirectResult.ActionName);
-        //}
-
-
-        //[Test]
-        //public void Register_InvalidRegistration_ReturnsViewWithError()
-        //{
-        //    // Arrange
-        //    var username = "";
-        //    var password = "";
-
-        //    // Act
-        //    var result = _controller.Register(username, password);  // No await, as it's not async
-
-        //    // Assert
-        //    var viewResult = result as ViewResult;
-        //    Assert.NotNull(viewResult);
-        //    Assert.AreEqual("Username and password are required.", viewResult.ViewData["Error"]);
-        //}
-
-
-        // Implement IDisposable for cleanup
-        [TearDown]
-        public void Dispose()
+        [Test]
+        public void Reset_Get_ReturnsView()
         {
-            // You can clean up here if necessary
-            _mockAuthService = null;  // Null out references if required
-            _controller = null;  // Null out references if needed
+            // Act
+            var result = _controller.Reset();
+
+            // Assert
+            Assert.IsInstanceOf<ViewResult>(result);
         }
+
+        [Test]
+        public void Reset_InvalidInput_ReturnsViewWithError()
+        {
+            // Act
+            var result = _controller.Reset("", "", "") as ViewResult;
+
+            // Assert
+            Assert.AreEqual("Username and both password fields are required.", result.ViewData["Error"]);
+        }
+
+        [Test]
+        public void Reset_PasswordsDoNotMatch_ReturnsViewWithError()
+        {
+            // Act
+            var result = _controller.Reset("user", "Password1", "Password2") as ViewResult;
+
+            // Assert
+            Assert.AreEqual("Passwords do not match.", result.ViewData["Error"]);
+        }
+
+        [Test]
+        public void Reset_WeakPassword_ReturnsViewWithError()
+        {
+            // Act
+            var result = _controller.Reset("user", "short", "short") as ViewResult;
+
+            // Assert
+            Assert.AreEqual("Password must be at least 8 characters long and contain both letters and numbers.", result.ViewData["Error"]);
+        }
+
+        [Test]
+        public void Reset_UserNotFound_ReturnsViewWithError()
+        {
+            _mockAuthService.Setup(x => x.ResetPassword("user", "Password123")).Returns(false);
+
+            var result = _controller.Reset("user", "Password123", "Password123") as ViewResult;
+
+            Assert.AreEqual("User not found or password reset failed.", result.ViewData["Error"]);
+        }
+
+        [Test]
+        public void Reset_Valid_ReturnsRedirectToLogin()
+        {
+            _mockAuthService.Setup(x => x.ResetPassword("user", "Password123")).Returns(true);
+
+            var result = _controller.Reset("user", "Password123", "Password123");
+
+            Assert.IsInstanceOf<RedirectToActionResult>(result);
+            Assert.AreEqual("Login", ((RedirectToActionResult)result).ActionName);
+        }
+
     }
 }

@@ -1,12 +1,20 @@
-using ContactList.Web.Common.Services;
+﻿using ContactList.Web.Common.Services;
 using ContactList.Web.Models;
 using ContactList.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole().AddDebug();
+});
+
+var logger = loggerFactory.CreateLogger("Startup");
 
 // Add DbContext with logging
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -17,7 +25,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     }
     catch (Exception ex)
     {
-        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
         logger.LogError($"Error while setting up the database connection: {ex.Message}");
         throw;  // Rethrow the exception after logging
     }
@@ -51,6 +58,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration["Redis:Configuration"]; // retrieve from azure environment variables
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration["Redis:Configuration"]));
+
+// ✅ Log Redis configuration values
+logger.LogInformation("Initializing Redis with Configuration: {RedisConfiguration}, InstanceName: {RedisInstanceName}",
+    builder.Configuration["Redis:Configuration"], builder.Configuration["Redis:InstanceName"]);
 
 // Add session services
 builder.Services.AddSession(options =>
