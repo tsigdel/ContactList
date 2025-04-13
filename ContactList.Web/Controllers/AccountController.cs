@@ -27,32 +27,39 @@ namespace ContactList.Web.Controllers
         // Register: Handle user registration
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(string username, string password)
+        public async Task<IActionResult> Register(string username, string password)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
                 {
-                    ViewBag.Error = "Username and password are required.";
+                    TempData["ErrorMessage"] = "Username and password are required.";
                     return View();
                 }
 
                 var success = _authService.Register(username, password);
                 if (!success)
                 {
-                    ViewBag.Error = "Registration failed. Username might already exist.";
+                    TempData["ErrorMessage"] = "Registration failed. Username might already exist.";
                     return View();
                 }
-                _redisService.StoreDataAsync("UserName", username);
+
+                await _redisService.StoreDataAsync("UserName", username);
                 _logger.LogInformation("User registered successfully: {Username}", username);
+
+                TempData["SuccessMessage"] = "Registration successful! Please log in.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during registration for user: {Username}", username);
-                return StatusCode(500, "An error occurred while processing your registration.");
+                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
+                return View();
             }
         }
+
+
+
 
         // Login: Show login form
         [HttpGet]

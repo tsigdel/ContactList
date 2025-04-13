@@ -15,7 +15,7 @@ namespace ContactList.Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Contacts");
         }
 
         public IActionResult Privacy()

@@ -38,18 +38,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
-//builder.Services.AddDistributedSqlServerCache(options =>
-//{
-//    options.ConnectionString = builder.Configuration.GetConnectionString("SessionDb");
-//    options.SchemaName = "dbo";
-//    options.TableName = "SharedSession";
-//});
+builder.Services.AddDistributedSqlServerCache(options =>
+{
+    options.ConnectionString = builder.Configuration.GetConnectionString("SessionDb");
+    options.SchemaName = "dbo";
+    options.TableName = "SharedSession";
+});
 
 // Add distributed SQL Server session support
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";  // Pointing to  Redis server
-    options.InstanceName = "ContactListApp_";  // Optional: to scope  Redis cache
+    options.Configuration = builder.Configuration["Redis:Configuration"]; // retrieve from azure environment variables
+    options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 
 // Add session services

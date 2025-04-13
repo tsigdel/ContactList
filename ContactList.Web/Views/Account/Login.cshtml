@@ -20,10 +20,22 @@
         </div>
 
     </form>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
     @if (ViewBag.Error != null)
     {
-        <div class="alert alert-danger mt-2">@ViewBag.Error</div>
+        <div class="alert alert-danger">@ViewBag.Error</div>
     }
+
+
     <br />
     <a href="/Account/Reset">Forgot Password?</a>
 </div>

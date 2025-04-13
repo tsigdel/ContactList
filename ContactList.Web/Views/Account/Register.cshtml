@@ -1,8 +1,16 @@
 ﻿@{
     ViewData["Title"] = "Register";
 }
+
 <div class="container mt-4">
-    <h2>Register</h2>
+    <h2>Login</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+
     <form method="post">
         <div class="mb-3">
             <label class="form-label">Username</label>
@@ -12,7 +20,8 @@
             <label class="form-label">Password</label>
             <input type="password" name="password" class="form-control" required />
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
-    <a href="/Account/Login">Already have an account? Login</a>
+
+    <a href="/Account/Register">Don't have an account? Register</a>
 </div>
