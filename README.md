@@ -58,7 +58,15 @@
    dotnet restore
    ```
 
-3. Set up the connection string for SQL Server in `appsettings.json`.
+3. Configure Production (Azure)
+
+In production (Azure), the connection strings are managed through the Application Settings in the Azure portal. The values for DefaultConnection and RedisConnection should be set as follows:
+
+SQL Server Connection String: Set the connection string for your SQL Server under Application Settings -> Connection Strings in Azure.
+
+Redis Connection String: Set the Redis connection string for Redis Cache in Application Settings -> Connection Strings.
+
+Azure will automatically use these environment variables in production, overriding the settings in appsettings.json.
 
 4. Start the application:
    ```bash
@@ -76,7 +84,7 @@ This app is configured for deployment to **Azure**. It includes a GitHub Actions
 1. Create an Azure Web App.
 2. Set up continuous deployment with GitHub or Azure Pipelines.
 3. Configure Redis caching in the Azure portal if not already set up.
-4. Deploy your app.
+4. Deploy app.
 
 ## Testing
 
