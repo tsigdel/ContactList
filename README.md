@@ -1,3 +1,4 @@
+
 # Contact List Application
 
 ## Overview
@@ -22,7 +23,7 @@
 
 ### 🚫 Not Implemented
 
-- Classic ASP integration (though Redis is prepared for it in .net core side)
+- Classic ASP integration (though Redis is prepared for it in .NET Core side)
 - Password reset functionality
 
 ## Tech Stack
@@ -50,3 +51,45 @@
    ```bash
    git clone [https://github.com/your-username/contact-list-app.git](https://github.com/tsigdel/ContactList)
    cd contact-list-app
+   ```
+
+2. Install the required NuGet packages:
+   ```bash
+   dotnet restore
+   ```
+
+3. Set up the connection string for SQL Server in `appsettings.json`.
+
+4. Start the application:
+   ```bash
+   dotnet run
+   ```
+
+5. The application should be accessible at `http://localhost:5000`.
+
+## Deployment
+
+This app is configured for deployment to **Azure**. It includes a GitHub Actions workflow and an Azure pipeline configuration to automate the deployment process.
+
+### Deploying to Azure
+
+1. Create an Azure Web App.
+2. Set up continuous deployment with GitHub or Azure Pipelines.
+3. Configure Redis caching in the Azure portal if not already set up.
+4. Deploy your app.
+
+## Testing
+
+This app uses **NUnit** and **Moq** for unit testing. Run the tests using the following command:
+
+```bash
+dotnet test
+```
+
+## Contributing
+
+Feel free to fork the project, open issues, and submit pull requests. Contributions are welcome!
+
+## License
+
+This project is licensed under the MIT License.
