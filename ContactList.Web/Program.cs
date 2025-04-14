@@ -45,12 +45,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
-builder.Services.AddDistributedSqlServerCache(options =>
-{
-    options.ConnectionString = builder.Configuration.GetConnectionString("SessionDb");
-    options.SchemaName = "dbo";
-    options.TableName = "SharedSession";
-});
+//builder.Services.AddDistributedSqlServerCache(options =>
+//{
+//    options.ConnectionString = builder.Configuration.GetConnectionString("SessionDb");
+//    options.SchemaName = "dbo";
+//    options.TableName = "SharedSession";
+//});
 
 var redisConnection = builder.Configuration.GetConnectionString("RedisConnectionUrl");
 // Add distributed SQL Server session support

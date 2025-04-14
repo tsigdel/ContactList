@@ -107,14 +107,23 @@ namespace ContactList.Web.Controllers
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 _logger.LogInformation("User logged in successfully: {Username}", username);
 
-                // Ensure Redis operation is async and correctly handled
-                var loggedInUser = await _redisService.GetDataAsync<string>("LoggedInUser");
-
-                if (loggedInUser == null)
+                try
                 {
-                    // If there's no value in Redis, store the username
-                    await _redisService.StoreDataAsync("LoggedInUser", username);
+                    // Ensure Redis operation is async and correctly handled
+                    var loggedInUser = await _redisService.GetDataAsync<string>("LoggedInUser");
+
+                    if (loggedInUser == null)
+                    {
+                        // If there's no value in Redis, store the username
+                        await _redisService.StoreDataAsync("LoggedInUser", username);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Redis cache error occurred");
+                }
+
+                
 
                 return RedirectToAction("Index", "Contacts");
             }
