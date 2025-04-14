@@ -15,7 +15,19 @@ public class RedisController : ControllerBase
     [HttpGet("loggedinuser")]
     public async Task<IActionResult> GetLoggedInUser()
     {
-        var username = await _redisService.GetDataAsync<string>("LoggedInUser");
-        return Ok(username ?? "");
+        try
+        {
+            var username = await _redisService.GetDataAsync<string>("LoggedInUser");
+            return Ok(username ?? "");
+        }
+        catch (Exception ex)
+        {
+            // Optional: log the error
+            // _logger.LogError(ex, "Error retrieving logged-in user");
+
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "An error occurred while retrieving the logged-in user.", error = ex.Message });
+        }
     }
+
 }
