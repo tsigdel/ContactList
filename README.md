@@ -59,7 +59,7 @@
    ```
 
 3. Configure Production (Azure)
-   In production (Azure), the connection strings are managed through the Application Settings in the Azure portal. The values for DefaultConnection and RedisConnection should be set as follows:
+  > In production (Azure), the connection strings are managed through the Application Settings in the Azure portal. The values for DefaultConnection and RedisConnection should be set as follows:
    SQL Server Connection String: Set the connection string for your SQL Server under Application Settings -> Connection Strings in Azure.
    Redis Connection String: Set the Redis connection string for Redis Cache in Application Settings -> Connection Strings.
    Azure will automatically use these environment variables in production, overriding the settings in appsettings.json.
