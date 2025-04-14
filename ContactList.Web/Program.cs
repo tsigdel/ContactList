@@ -52,18 +52,31 @@ builder.Services.AddDistributedSqlServerCache(options =>
     options.TableName = "SharedSession";
 });
 
+var redisConnection = builder.Configuration.GetConnectionString("RedisConnectionUrl");
 // Add distributed SQL Server session support
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:Configuration"]; // retrieve from azure environment variables
+    options.Configuration = redisConnection; // retrieve from azure environment variables
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration["Redis:Configuration"]));
+
+
+try
+{
+    builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnection));
+}
+catch (Exception ex)
+{
+    // Log the exception (optional)
+    Console.WriteLine($"Error connecting to Redis: {ex.Message}");
+    // Handle the exception (optional, depending on your use case)
+}
+
 
 // ✅ Log Redis configuration values
 logger.LogInformation("Initializing Redis with Configuration: {RedisConfiguration}, InstanceName: {RedisInstanceName}",
-    builder.Configuration["Redis:Configuration"], builder.Configuration["Redis:InstanceName"]);
+    redisConnection, builder.Configuration["Redis:InstanceName"]);
 
 // Add session services
 builder.Services.AddSession(options =>
